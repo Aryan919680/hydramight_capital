@@ -1,170 +1,72 @@
-import React, { useState } from "react";
-import { createRoot } from "react-dom/client";
-import "./styles.css";
+import React, { useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import './styles.css';
 
-const catalog = {
-  invest: {
-    title: "Investment & Wealth",
-    subtitle: "Mutual Funds, SIP, PMS, AIF, Bonds & more",
-    groups: [
-      ["Retail Investments", ["Mutual Funds", "SIP / SWP / SIF", "Demat Account", "Bonds"]],
-      ["HNI & Institutional", ["Unlisted Shares", "Portfolio Management Services (PMS)", "Alternative Investment Funds (AIF)"]],
-      ["Trading & Technology", ["Trading Algo & Technology Software"]],
-    ],
-  },
-  loans: {
-    title: "Loans & Credit",
-    subtitle: "Business Loans, Home Loans, Personal Loans, Credit Cards & more",
-    groups: [
-      ["Business Financing", ["Business Loans", "MSME Loans", "Project Financing"]],
-      ["Personal Loans", ["Home Loans", "Personal Loans"]],
-      ["Loan Transfer & Refinancing", ["Balance Transfer"]],
-      ["Credit & Salary Finance", ["Credit Cards", "Overdraft (OD) Against Salary"]],
-    ],
-  },
-  insurance: {
-    title: "Insurance",
-    subtitle: "Life, Health, Motor, General & Business Insurance",
-    groups: [
-      ["Life & Health", ["Life Insurance", "Health Insurance"]],
-      ["General & Motor", ["Motor Insurance", "General Insurance"]],
-      ["Business Insurance", ["Business Insurance"]],
-    ],
-  },
+const Icon = ({name, size=24}) => {
+  const p={
+    chart:<><path d="M4 19V13M10 19V9M16 19V5M3 8l5-4 4 3 8-6"/><path d="M16 1h4v4"/></>,
+    wallet:<><path d="M3 6h15a2 2 0 0 1 2 2v11H5a2 2 0 0 1-2-2V6Z"/><path d="M3 8V5a2 2 0 0 1 2-2h11v5M15 12h7v4h-7a2 2 0 0 1 0-4Z"/></>,
+    shield:<><path d="M12 2 20 6v6c0 5-3.4 8.2-8 10-4.6-1.8-8-5-8-10V6l8-4Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></>,
+    home:<><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10M9 20v-6h6v6"/></>,
+    brief:<><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"/></>,
+    transfer:<><path d="M4 7h15m0 0-4-4m4 4-4 4M20 17H5m0 0 4 4m-4-4 4-4"/></>,
+    card:<><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></>,
+    heart:<><path d="M20.8 4.7a5.4 5.4 0 0 0-7.6 0L12 5.9l-1.2-1.2a5.4 5.4 0 1 0-7.6 7.6L12 21l8.8-8.7a5.4 5.4 0 0 0 0-7.6Z"/></>,
+    car:<><path d="m5 11 1.5-5h11l1.5 5M3 12h18v6H3zM6 18v2M18 18v2"/><circle cx="7" cy="15" r="1"/><circle cx="17" cy="15" r="1"/></>,
+    building:<><path d="M4 21V4h10v17M14 9h6v12M7 8h4M7 12h4M7 16h4M17 13h1M17 17h1"/></>,
+    file:<><path d="M6 2h8l4 4v16H6zM14 2v5h5M9 12h6M9 16h6"/></>,
+    palm:<><path d="M12 22V9M12 9c-2-4-5-5-8-3 4 0 6 2 8 3Zm0 0c2-4 5-5 8-3-4 0-6 2-8 3Zm0 1c-4-1-6 1-7 4 3-2 5-2 7-4Zm0 0c4-1 6 1 7 4-3-2-5-2-7-4Z"/></>,
+    grad:<><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11v5c3 2 9 2 12 0v-5M22 9v6"/></>,
+    check:<><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></>,
+    arrow:<><path d="M5 12h14M14 7l5 5-5 5"/></>,
+    info:<><circle cx="12" cy="12" r="10"/><path d="M12 11v6M12 7h.01"/></>,
+    bell:<><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></>
+  };
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{p[name]}</svg>
 };
 
-const Option = ({ children, selected, onClick }) => (
-  <button type="button" className={`option-btn ${selected ? "selected" : ""}`} onClick={onClick}>{children}</button>
-);
+const DATA={
+  invest:{label:'Investment & Wealth',bannerTitle:'Looking to grow your money?',banner:'Tell us your goal — we’ll show matching Mutual Funds, SIPs & PMS in 20 seconds.',groups:[
+    {title:'Retail Investments',icon:'chart',items:['Mutual Funds','SIP / SWP / SIF','Demat Account','Bonds']},
+    {title:'HNI & Institutional',icon:'shield',items:['Unlisted Shares','Portfolio Management Services (PMS)','Alternative Investment Funds (AIF)']},
+    {title:'Trading & Technology',icon:'chart',items:['Trading Algo & Technology Software']}
+  ]},
+  loans:{label:'Loans & Credit',bannerTitle:'Need funds fast?',banner:'Select your amount & purpose — get personalized loan options instantly.',groups:[
+    {title:'Business Financing',icon:'brief',items:['Business Loans','MSME Loans','Project Financing']},
+    {title:'Personal Loans',icon:'home',items:['Home Loans','Personal Loans']},
+    {title:'Loan Transfer & Refinancing',icon:'transfer',items:['Balance Transfer']},
+    {title:'Credit & Salary Finance',icon:'card',items:['Credit Cards','Overdraft (OD) Against Salary']}
+  ]},
+  insurance:{label:'Insurance',bannerTitle:'Protect what matters most.',banner:'Choose what you want to insure and see the best plans for you in seconds.',groups:[
+    {title:'Life & Health',icon:'heart',items:['Life Insurance','Health Insurance']},
+    {title:'General & Motor',icon:'car',items:['Motor Insurance','General Insurance']},
+    {title:'Business Insurance',icon:'building',items:['Business Insurance']}
+  ]}
+};
 
-function LeadCard({ tab }) {
-  const [step, setStep] = useState(1);
-  const [choice, setChoice] = useState("");
-  const [secondary, setSecondary] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [insuranceType, setInsuranceType] = useState("");
+const investGoals=[
+  ['Wealth Creation','Grow your wealth over time','chart'],['Tax Saving','Plan tax-efficient investments','file'],['Retirement Planning','Secure your future','palm'],["Child's Future",'Plan for education & dreams','grad'],['Financial Freedom','Build independence & flexibility','shield'],['Not sure yet','Help me choose','info']
+];
+const loanAmounts=[['Under ₹5 Lakh','wallet'],['₹5–15 Lakh','chart'],['₹15–50 Lakh','brief'],['Above ₹50 Lakh','shield']];
+const loanPurposes=[['Personal','heart'],['Home','home'],['Business','building'],['Balance Transfer','transfer']];
+const insuranceTypes=[['Life Insurance','Protect your family','shield'],['Health Insurance','Cover medical expenses','heart'],['Motor Insurance','Protect your vehicle','car'],['General Insurance','Protect what you own','shield'],['Business Insurance','Protect your enterprise','building']];
 
-  const reset = () => { setStep(1); setChoice(""); setSecondary(""); setMobile(""); setInsuranceType(""); };
+function Brand(){return <a className="brand" href="#"><span className="brand-mark"><i></i><i></i><i></i></span><span className="brand-copy"><b>Hydramight<span>capital</span></b><small>Simple access to financial products</small></span></a>}
+function Choice({icon,title,sub,active,onClick,compact=false}){return <button className={`choice ${active?'active':''} ${compact?'compact':''}`} onClick={onClick}><span className="choice-icon"><Icon name={icon}/></span><span className="choice-text"><b>{title}</b>{sub&&<small>{sub}</small>}</span>{active?<span className="selected"><Icon name="check" size={22}/></span>:<span className="chev">›</span>}</button>}
 
-  if (step === 3) return (
-    <div className="flow-card success">
-      <div className="success-icon">✓</div>
-      <h2>{tab === "insurance" ? "Quotes on the way!" : tab === "loans" ? "Options ready!" : "You’re all set!"}</h2>
-      <p>{tab === "insurance" ? "We’ve sent the best matching plans to your WhatsApp." : tab === "loans" ? "We’ve sent matching loan options to your WhatsApp." : "We’ve sent personalized options to your WhatsApp."}</p>
-      <button className="text-button" onClick={reset}>Start over</button>
-    </div>
-  );
+function InvestPanel(){const [goal,setGoal]=useState('Wealth Creation');return <div className="question-card"><h1>What’s your main investment goal?</h1><p>This helps us show the right options.</p><div className="goal-list">{investGoals.map(([t,s,i])=><Choice key={t} title={t} sub={s} icon={i} active={goal===t} onClick={()=>setGoal(t)}/>)}</div><button className="cta">Get Personalized Options <Icon name="arrow"/></button><div className="security"><Icon name="shield" size={16}/> Personalized recommendations in <b>20 seconds</b></div></div>}
+function LoanPanel(){const [amount,setAmount]=useState('Under ₹5 Lakh');const [purpose,setPurpose]=useState('Personal');return <div className="question-card loan-card"><h1>How much loan are you looking for?</h1><p>Select an amount range.</p><div className="amount-grid">{loanAmounts.map(([t,i])=><Choice key={t} title={t} icon={i} active={amount===t} onClick={()=>setAmount(t)} compact/>)}</div><hr/><h2>What is this loan for?</h2><p>Choose the best option that describes your need.</p><div className="purpose-grid">{loanPurposes.map(([t,i])=><Choice key={t} title={t} icon={i} active={purpose===t} onClick={()=>setPurpose(t)} compact/>)}</div><button className="cta">Check Loan Options <Icon name="arrow"/></button><div className="tip"><Icon name="info" size={19}/> Need funds? Select your amount & purpose — get <b>personalized loan options</b> instantly.</div></div>}
+function InsurancePanel(){const [type,setType]=useState('Health Insurance');return <div className="question-card"><h1>What do you want to insure?</h1><p>Choose a category to see matching plans.</p><div className="goal-list insurance-list">{insuranceTypes.map(([t,s,i])=><Choice key={t} title={t} sub={s} icon={i} active={type===t} onClick={()=>setType(t)}/>)}</div><button className="cta">Get Insurance Options <Icon name="arrow"/></button><div className="security"><Icon name="shield" size={16}/> Secure, quick and personalized recommendations.</div></div>}
 
-  if (tab === "insurance") {
-    if (step === 1) return (
-      <div className="flow-card">
-        <h2>What do you want to insure?</h2>
-        <p>Choose a category to get started</p>
-        <div className="option-stack">
-          {["🚗 Motor Insurance","❤️ Health Insurance","🛡️ Life Insurance","🏢 Business Insurance"].map(x =>
-            <Option key={x} selected={insuranceType===x} onClick={()=>setInsuranceType(x)}>{x}</Option>)}
-        </div>
-        <button className="primary-cta" disabled={!insuranceType} onClick={()=>setStep(2)}>Continue →</button>
-      </div>
-    );
-    return (
-      <div className="flow-card">
-        <button className="back" onClick={()=>setStep(1)}>← Back</button>
-        <h2>Get {insuranceType.replace(/[^\w\s]/g,"").trim()} Quotes</h2>
-        <p>Enter your mobile number to see matching plans</p>
-        <label className="field-label">Mobile Number</label>
-        <div className="phone-field"><span>+91</span><input value={mobile} onChange={e=>setMobile(e.target.value.replace(/\D/g,"").slice(0,10))} placeholder="98765 43210"/></div>
-        <button className="primary-cta" disabled={mobile.length!==10} onClick={()=>setStep(3)}>Get Free Quotes →</button>
-        <small className="helper">Best plans sent on WhatsApp</small>
-      </div>
-    );
-  }
+function SideCatalog({tab}){return <aside className="side-catalog">{DATA[tab].groups.map((g,idx)=><div className="side-group" key={g.title}><div className="side-icon"><Icon name={g.icon}/></div><div><h3>{g.title}</h3><p>{g.items.join(', ')}</p></div><i className="blue-dot"></i>{idx<DATA[tab].groups.length-1&&<span className="divider"/>}</div>)}</aside>}
 
-  if (step === 1 && tab === "invest") return (
-    <div className="flow-card">
-      <h2>What’s your main investment goal?</h2><p>This helps us show the right options</p>
-      <div className="option-stack">
-        {["Wealth Creation","Tax Saving","Retirement","High Returns (Aggressive)","Not sure yet"].map(x=><Option key={x} selected={choice===x} onClick={()=>setChoice(x)}>{x}</Option>)}
-      </div>
-      <button className="primary-cta" disabled={!choice} onClick={()=>setStep(2)}>Get Personalized Options →</button>
-    </div>
-  );
+function App(){const [tab,setTab]=useState('invest');const d=DATA[tab];return <div className="app">
+  <header><div className="header-inner"><Brand/><nav className="desktop-nav"><a>Overview</a><a className={tab==='loans'?'active':''} onClick={()=>setTab('loans')}>Loans & Credit</a><a className={tab==='invest'?'active':''} onClick={()=>setTab('invest')}>Investments</a><a>Payments</a><a>Insights</a><a>Support</a></nav><div className="header-actions"><button className="profile">●</button><button className="login">Login</button><button className="bell"><Icon name="bell"/></button></div></div></header>
+  <div className="mobile-tabs">{Object.entries(DATA).map(([k,v])=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}>{v.label}</button>)}</div>
+  <main>
+    <section className={`smart-banner ${tab}`}><span className="banner-icon"><Icon name={tab==='loans'?'wallet':tab==='insurance'?'shield':'chart'} size={27}/></span><div><b>{d.bannerTitle}</b><span>{d.banner}</span></div><span className="banner-arrow">›</span></section>
+    <div className="content-grid"><SideCatalog tab={tab}/><section className="panel" key={tab}>{tab==='invest'?<InvestPanel/>:tab==='loans'?<LoanPanel/>:<InsurancePanel/>}</section></div>
+  </main>
+</div>}
 
-  if (step === 1) return (
-    <div className="flow-card">
-      <h2>How much loan are you looking for?</h2><p>Select an amount range</p>
-      <div className="option-grid">
-        {["Under ₹5 Lakh","₹5–15 Lakh","₹15–50 Lakh","Above ₹50 Lakh"].map(x=><Option key={x} selected={choice===x} onClick={()=>setChoice(x)}>{x}</Option>)}
-      </div>
-      <div className="mini-title">What is this loan for?</div>
-      <div className="option-grid compact">
-        {["Personal","Home","Business","Balance Transfer"].map(x=><Option key={x} selected={secondary===x} onClick={()=>setSecondary(x)}>{x}</Option>)}
-      </div>
-      <button className="primary-cta" disabled={!choice || !secondary} onClick={()=>setStep(2)}>Check Loan Options →</button>
-    </div>
-  );
-
-  return (
-    <div className="flow-card">
-      <button className="back" onClick={()=>setStep(1)}>← Back</button>
-      <h2>{tab==="loans" ? "Check your eligibility" : "Almost there!"}</h2>
-      <p>{tab==="loans" ? "Enter mobile to see matching loan options" : "Enter your mobile to get personalized options"}</p>
-      <label className="field-label">Mobile Number</label>
-      <div className="phone-field"><span>+91</span><input value={mobile} onChange={e=>setMobile(e.target.value.replace(/\D/g,"").slice(0,10))} placeholder="98765 43210"/></div>
-      <div className="mini-title">{tab==="loans" ? "Monthly Income / Turnover (optional)" : "Investment Amount (optional)"}</div>
-      <div className="option-grid compact">
-        {(tab==="loans" ? ["Under ₹50k","₹50k–2L","₹2L–10L","Above ₹10L"] : ["₹10k–50k","₹50k–5L","₹5L+"]).map(x=><Option key={x} selected={secondary===x} onClick={()=>setSecondary(x)}>{x}</Option>)}
-      </div>
-      <button className="primary-cta" disabled={mobile.length!==10} onClick={()=>setStep(3)}>{tab==="loans" ? "Get Loan Options" : "Get My Options"}</button>
-      <small className="helper">We’ll send options on WhatsApp. No spam.</small>
-    </div>
-  );
-}
-
-function App() {
-  const [tab, setTab] = useState("invest");
-  const data = catalog[tab];
-
-  return <div className="app-shell">
-    <header className="site-header">
-      <div className="header-inner">
-        <a className="logo" href="#"><span>Hydramight</span><b>capital</b></a>
-        <div className="header-note">Simple access to financial products</div>
-      </div>
-    </header>
-
-    <div className="tabs-bar">
-      <nav className="tabs">
-        {[
-          ["invest","Investment & Wealth"],
-          ["loans","Loans & Credit"],
-          ["insurance","Insurance"],
-        ].map(([id,label])=>
-          <button key={id} className={tab===id ? "tab active" : "tab"} onClick={()=>setTab(id)}>{label}</button>
-        )}
-      </nav>
-    </div>
-
-    <main className="market-main">
-      <section className="market-grid" key={tab}>
-        <div className="catalog-side">
-          <h1>{data.title}</h1>
-          <p className="catalog-subtitle">{data.subtitle}</p>
-          <div className="catalog-groups">
-            {data.groups.map(([heading,items])=>
-              <div className="catalog-group" key={heading}>
-                <h3>{heading}</h3>
-                <div className="product-list">
-                  {items.map(item=><button key={item} className="product-row"><span className="dot"></span>{item}</button>)}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-        <LeadCard tab={tab} />
-      </section>
-    </main>
-  </div>;
-}
-
-createRoot(document.getElementById("root")).render(<App />);
+createRoot(document.getElementById('root')).render(<App/>);
