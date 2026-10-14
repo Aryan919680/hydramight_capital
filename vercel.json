@@ -1,0 +1,21 @@
+
+{
+  "rewrites": [
+    {
+      "source": "/capital",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/capital/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/capital/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/index.html"
+    }
+  ]
+}
