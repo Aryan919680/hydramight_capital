@@ -10,6 +10,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/capital/assets/:path*",
+      "destination": "/assets/:path*"
+    },
+    {
       "source": "/capital/:path*",
       "destination": "/index.html"
     },
